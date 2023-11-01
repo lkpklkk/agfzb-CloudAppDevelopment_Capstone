@@ -28,10 +28,42 @@
           <a class="navbar-brand" href="#">Best Dealer</a>
         </div>
         <ul class="nav navbar-nav navbar-right">
+          {% if user.is_authenticated %}
           <li>
             <a class="btn btn-link" href="about">About</a>
             <a class="btn btn-link" href="contact">Contact</a>
+
+            <a class="btn btn-link" href="logout">Logout</a>
           </li>
+          {% else %}
+          <li>
+            <form
+              action="{% url 'djangoapp:login'%}"
+              class="form-inline"
+              method="post"
+            >
+              {% csrf_token %}
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Username"
+                  name="username"
+                />
+                <input
+                  type="password"
+                  class="form-control"
+                  placeholder="Password"
+                  name="psw"
+                />
+                <button class="btn btn-primary" type="submit">Login</button>
+                <a class="btn btn-link" href="{% url 'djangoapp:registration'%}"
+                  >Sign Up</a
+                >
+              </div>
+            </form>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </nav>
