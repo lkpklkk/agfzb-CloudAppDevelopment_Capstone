@@ -11,6 +11,8 @@ from datetime import datetime
 import logging
 import json
 
+from .restapi import get_dealers_from_cf, get_dealer_reviews_from_cf, post_review
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -81,17 +83,43 @@ def registration_request(request):
         return redirect("djangoapp:index")
 
 
-# Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
-    context = {}
     if request.method == "GET":
-        return render(request, "djangoapp/index.html", context)
+        url = "http://127.0.0.1:3000/dealerships/get"
+        # Get dealers from the URL
+        dealerships = get_dealers_from_cf(url)
+        # Concat all dealer's short name
+        dealer_names = " ".join([dealer.short_name for dealer in dealerships])
+        # Return a list of dealer short name
+        return HttpResponse(dealer_names)
 
 
-# Create a `get_dealer_details` view to render the reviews of a dealer
-# def get_dealer_details(request, dealer_id):
-# ...
+def get_dealer_details(request, dealer_id):
+    if request.method == "GET":
+        url = "http://127.0.0.1:5000/api/get_reviews"
+        # Get dealers from the URL
+        reviews = get_dealer_reviews_from_cf(url, dealerId=dealer_id)
+        # Concat all dealer's short name
+        dealer_names = " ".join([dealer.name for dealer in reviews])
+        # Return a list of dealer short name
+        return HttpResponse(dealer_names)
+
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
+def add_review(request, dealer_id):
+    review = dict()
+    review["name"] = "Anonymous"
+    review["time"] = datetime.utcnow().isoformat()
+    review["dealership"] = dealer_id
+    review["review"] = "This is a great car dealer"
+    review["purchase"] = True
+    review["purchase_date"] = "2021-01-01"
+    review["car_make"] = "Audi"
+    review["car_model"] = "A4"
+    review["car_year"] = 2021
+    review["id"] = 1000
+    json_payload = dict()
+    json_payload["review"] = review
+    url = "http://127.0.0.1:5000/api/post_review"
+    response = post_review(url, json_payload)
+    return HttpResponse(response)
